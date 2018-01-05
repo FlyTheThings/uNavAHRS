@@ -46,7 +46,7 @@ class uNavAHRS {
     void setMagSrd(uint8_t magSRD);
     void setAccelCovariance(float cov);
     void setHeadingCovariance(float cov);
-    void update(float ias,float p,float q,float r,float ax,float ay,float az,float hx, float hy, float hz);
+    void update(float p,float q,float r,float ax,float ay,float az,float hx, float hy, float hz);
     float getPitch_rad();
     float getRoll_rad();
     float getYaw_rad();
@@ -58,11 +58,12 @@ class uNavAHRS {
     // err covariance of accelerometers
     float var_a = 0.96177249f; //(0.1*g)^2
     // err covariance of magnetometer heading
-    float var_psi = 0.27415570336144f; //(30*d2r)^2
+    float var_psi = 0.014924; //(7*d2r)^2
     // estimated attitude
     float phi, theta, psi;
     // acceleration due to gravity
     const float G = 9.807f;
+    const float G2 = 2.0f*9.807f;
     // initialized
     bool initialized = false;
     // initial heading
@@ -76,6 +77,9 @@ class uNavAHRS {
     // magnetometer skip factor
     uint8_t _magSRD = 0;
     uint8_t _magCount = 0;
+    // accelerometer skip factor
+    uint8_t _accelSRD = 1;
+    uint8_t _accelCount = 0;
     // err, measurement, and process cov. matrices
     Eigen::Matrix<float,7,7> aP = Eigen::Matrix<float,7,7>::Zero();
     Eigen::Matrix<float,7,7> aQ = Eigen::Matrix<float,7,7>::Zero();

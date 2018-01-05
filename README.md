@@ -2,12 +2,12 @@
 uNav Attitude and Heading Reference System 7 State EKF Arduino Library.
 
 # Description
-The uNav Attitude and Heading Reference System (AHRS) is a 7 state Extended Kalman Filter (EKF) to estimate attitude and heading from IMU data. The 7 states comprise a quaternion and three gyro biases. The algorithm was developed by Jung Soon Jang at Stanford University ([1,2](<#references>)) and this library was adapted from software developed and flight tested at the [University of Minnesota UAS Research Labs](http://www.uav.aem.umn.edu), where it has been used since 2006. uNav AHRS provides good estimates of attitude and heading without requiring a GPS. It uses gyro measurements to propogate the state; accelerometers are used as a measurement update on the pitch and roll channels and magnetometers as a measurement update on the yaw channel to constrain drift. Optionally, airspeed measurements may be provided to correct apparent accelerations that can lead to errors in AHRS filters used on air vehicles.
+The uNav Attitude and Heading Reference System (AHRS) is a 7 state Extended Kalman Filter (EKF) to estimate attitude and heading from IMU data. The 7 states comprise a quaternion and three gyro biases. The algorithm was developed by Jung Soon Jang at Stanford University ([1,2](<#references>)) and this library was adapted from software developed and flight tested at the [University of Minnesota UAS Research Labs](http://www.uav.aem.umn.edu), where it has been used since 2006. uNav AHRS provides good estimates of attitude and heading without requiring a GPS. It uses gyro measurements to propogate the state; accelerometers are used as a measurement update on the pitch and roll channels and magnetometers as a measurement update on the yaw channel to constrain drift.
 
 # Usage
 
 ## Installation
-This library requires [Eigen](https://github.com/bolderflight/Eigen) to compile. First download or clone [Eigen](https://github.com/bolderflight/Eigen) into your Arduino/libraries folder, then download or clone this library into your Arduino/libraries folder. Additionally, this library requires IMU measurements and, optionally, airspeed measurements. For the included examples, an [MPU-9250 IMU](https://github.com/bolderflight/MPU9250) is used, and its library will need to be installed as well. Finally, because this library is using accelerometers and magnetometers as a measurement update, the IMU used should be well calibrated.
+This library requires [Eigen](https://github.com/bolderflight/Eigen) to compile. First download or clone [Eigen](https://github.com/bolderflight/Eigen) into your Arduino/libraries folder, then download or clone this library into your Arduino/libraries folder. Additionally, this library requires IMU measurements. For the included examples, an [MPU-9250 IMU](https://github.com/bolderflight/MPU9250) is used, and its library will need to be installed as well. Finally, because this library is using accelerometers and magnetometers as a measurement update, the IMU used should be well calibrated.
 
 ## Function Description
 
@@ -19,7 +19,7 @@ uNavAHRS Filter;
 ```
 
 ### Setup Functions
-A sample rate divider for the magnetometer can be configured for situations where: the magnetometer is measured at a lower rate than the accelerometers and gyros or you would like the magnetometer measurement update to run at a lower rate than the rest of the filter. Additionally, the accelerometer covariance and heading angle covariance, as measured by the magnetometers, can be configured. By default, the magnetometer sample rate divider is set to 0 (i.e. magnetometers sampled at the same rate as the accelerometers and gyros), the accelerometer covariance is set to 0.96177249 (0.1g)^2 or (0.9807m/s/s)^2, the heading angle covariance is set to 0.27415570336144 (30deg)^2 or (0.5235988rad)^2.
+A sample rate divider for the magnetometer can be configured for situations where: the magnetometer is measured at a lower rate than the accelerometers and gyros or you would like the magnetometer measurement update to run at a lower rate than the rest of the filter. Additionally, the accelerometer covariance and heading angle covariance, as measured by the magnetometers, can be configured. By default, the magnetometer sample rate divider is set to 0 (i.e. magnetometers sampled at the same rate as the accelerometers and gyros), the accelerometer covariance is set to 0.96177249 (0.1g)^2 or (0.9807m/s/s)^2, the heading angle covariance is set to 0.014924 (7deg)^2 or (0.122173rad)^2.
 
 **(optional) void setMagSrd(uint8_t magSRD)** 
 This is an optional function to set the magnetometer sample rate. This is useful for situations where: the magnetometer is measured at a lower rate than the accelerometers and gyros or you would like the magnetometer measurement update to run at a lower rate than the rest of the AHRS filter. The rate is set by a sample rate divider, *uint8_t magSRD*. The rate is then given by:
@@ -50,7 +50,6 @@ Filter.setHeadingCovariance(0.122173f);
 
 **void update(float ias,float p,float q,float r,float ax,float ay,float az,float hx, float hy, float hz)** updates the filter with new IMU measurements, time updates propogate the state and measurement updates are made; the attitude and heading of the vehicle is updated. Inputs are:
 
-* float ias: (optional) the current airspeed of the vehicle, used to correct apparent accelerations that can lead to errors in AHRS filters used on air vehicles. Units are m/s.
 * float p: gyro measurement in the x direction, units are rad/s.
 * float q: gyro measurement in the y direction, units are rad/s.
 * float r: gyro measurement in the z direction, units are rad/s.
@@ -67,7 +66,7 @@ Please note that all directional measurements (i.e. all measurements other than 
 // read the sensor
 Imu.readSensor();
 // update the filter
-Filter.update(0.0f,Imu.getGyroX_rads(),Imu.getGyroY_rads(),Imu.getGyroZ_rads(),Imu.getAccelX_mss(),Imu.getAccelY_mss(),Imu.getAccelZ_mss(),Imu.getMagX_uT(),Imu.getMagY_uT(),Imu.getMagZ_uT());
+Filter.update(Imu.getGyroX_rads(),Imu.getGyroY_rads(),Imu.getGyroZ_rads(),Imu.getAccelX_mss(),Imu.getAccelY_mss(),Imu.getAccelZ_mss(),Imu.getMagX_uT(),Imu.getMagY_uT(),Imu.getMagZ_uT());
 ```
 
 **float getRoll_rad()** returns the roll angle in units of rad.
