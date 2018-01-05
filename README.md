@@ -2,7 +2,11 @@
 uNav Attitude and Heading Reference System 7 State EKF Arduino Library.
 
 # Description
+<<<<<<< HEAD
 The uNav Attitude and Heading Reference System (AHRS) is a 7 state Extended Kalman Filter (EKF) to estimate attitude and heading from IMU data. The 7 states comprise a quaternion and three gyro biases. The algorithm was developed by Jung Soon Jang at Stanford University ([1,2](<#references>)) and this library was adapted from software developed and flight tested at the [University of Minnesota UAS Research Labs](http://www.uav.aem.umn.edu), where it has been used since 2006. uNav AHRS provides good estimates of attitude and heading without requiring a GPS. It uses gyro measurements to propogate the state; accelerometers are used as a measurement update on the pitch and roll channels and magnetometers as a measurement update on the yaw channel to constrain drift.
+=======
+The uNav Attitude and Heading Reference System (AHRS) is a 7 state Extended Kalman Filter (EKF) to estimate attitude and heading from IMU data. The 7 states comprise a quaternion and three gyro biases. The algorithm was developed by Jung Soon Jang at Stanford University ([1,2](<#references>)) and this library was adapted from software developed and flight tested at the [University of Minnesota UAS Research Labs](http://www.uav.aem.umn.edu), where it has been used since 2006. uNav AHRS provides good estimates of attitude and heading without requiring a GPS. It uses gyro measurements to propagate the state; accelerometers are used as a measurement update on the pitch and roll channels and magnetometers as a measurement update on the yaw channel to constrain drift. Optionally, airspeed measurements may be provided to correct apparent accelerations that can lead to errors in AHRS filters used on air vehicles.
+>>>>>>> 84a5d521ea8b00285e9b2d00897acfce52d094e6
 
 # Usage
 
