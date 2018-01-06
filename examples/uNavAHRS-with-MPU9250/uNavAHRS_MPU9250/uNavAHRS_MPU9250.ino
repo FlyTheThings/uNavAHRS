@@ -80,6 +80,8 @@ void setup() {
   Imu.setMagCalY(hyb,hys);
   Imu.setMagCalZ(hzb,hzs);
 
+  // setting a 41 Hz DLPF bandwidth
+  Imu.setDlpfBandwidth(MPU9250::DLPF_BANDWIDTH_41HZ);
   // setting SRD to 9 for a 100 Hz update rate
   Imu.setSrd(9);
   // enabling the data ready interrupt
@@ -96,15 +98,13 @@ void loop() {
     // read the sensor
     Imu.readSensor();
     // update the filter
-    Filter.update(0.0f,Imu.getGyroX_rads(),Imu.getGyroY_rads(),Imu.getGyroZ_rads(),Imu.getAccelX_mss(),Imu.getAccelY_mss(),Imu.getAccelZ_mss(),Imu.getMagX_uT(),Imu.getMagY_uT(),Imu.getMagZ_uT());
+    Filter.update(Imu.getGyroX_rads(),Imu.getGyroY_rads(),Imu.getGyroZ_rads(),Imu.getAccelX_mss(),Imu.getAccelY_mss(),Imu.getAccelZ_mss(),Imu.getMagX_uT(),Imu.getMagY_uT(),Imu.getMagZ_uT());
     tstop = micros();
     Serial.print(Filter.getPitch_rad()*180.0f/PI);
     Serial.print("\t");
     Serial.print(Filter.getRoll_rad()*180.0f/PI);
     Serial.print("\t");
     Serial.print(Filter.getYaw_rad()*180.0f/PI);
-    Serial.print("\t");
-    Serial.print(Filter.getHeading_rad()*180.0f/PI);
     Serial.print("\t");
     Serial.println(tstop - tstart);
   }
