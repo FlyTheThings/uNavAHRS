@@ -36,6 +36,7 @@ class uNavAHRS {
     float getPitch_rad();
     float getYaw_rad();
     float getHeading_rad();
+    void getQuaternion(float *qw, float *qi, float *qj, float *qk);
     float getGyroBiasX_rads();
     float getGyroBiasY_rads();
     float getGyroBiasZ_rads();

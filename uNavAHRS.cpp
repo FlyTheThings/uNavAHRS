@@ -356,6 +356,14 @@ float uNavAHRS::getHeading_rad() {
   return constrainAngle360(_Euler(2,0));
 }
 
+/* Returns the unit quaternion */
+void uNavAHRS::getQuaternion(float *qw, float *qi, float *qj, float *qk) {
+  *qw = _Quat(0,0);
+  *qi = _Quat(1,0);
+  *qj = _Quat(2,0);
+  *qk = _Quat(3,0);
+}
+
 /* Returns the gyro bias in the X axis, rad/s */
 float uNavAHRS::getGyroBiasX_rads() {
   return x_(4,0);
