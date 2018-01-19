@@ -98,15 +98,24 @@ void loop() {
     // read the sensor
     Imu.readSensor();
     // update the filter
-    Filter.update(Imu.getGyroX_rads(),Imu.getGyroY_rads(),Imu.getGyroZ_rads(),Imu.getAccelX_mss(),Imu.getAccelY_mss(),Imu.getAccelZ_mss(),Imu.getMagX_uT(),Imu.getMagY_uT(),Imu.getMagZ_uT());
-    tstop = micros();
-    Serial.print(Filter.getPitch_rad()*180.0f/PI);
-    Serial.print("\t");
-    Serial.print(Filter.getRoll_rad()*180.0f/PI);
-    Serial.print("\t");
-    Serial.print(Filter.getYaw_rad()*180.0f/PI);
-    Serial.print("\t");
-    Serial.println(tstop - tstart);
+    if (Filter.update(Imu.getGyroX_rads(),Imu.getGyroY_rads(),Imu.getGyroZ_rads(),Imu.getAccelX_mss(),Imu.getAccelY_mss(),Imu.getAccelZ_mss(),Imu.getMagX_uT(),Imu.getMagY_uT(),Imu.getMagZ_uT())) {
+      tstop = micros();
+      Serial.print(Filter.getPitch_rad()*180.0f/PI);
+      Serial.print("\t");
+      Serial.print(Filter.getRoll_rad()*180.0f/PI);
+      Serial.print("\t");
+      Serial.print(Filter.getYaw_rad()*180.0f/PI);
+      Serial.print("\t");
+      Serial.print(Filter.getHeading_rad()*180.0f/PI);
+      Serial.print("\t");
+      Serial.print(Filter.getGyroBiasX_rads(),6);
+      Serial.print("\t");
+      Serial.print(Filter.getGyroBiasY_rads(),6);
+      Serial.print("\t");
+      Serial.print(Filter.getGyroBiasZ_rads(),6);
+      Serial.print("\t");
+      Serial.println(tstop - tstart);
+    }
   }
 }
 

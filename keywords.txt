@@ -1,7 +1,5 @@
 uNavAHRS	KEYWORD1
-setMagSrd	KEYWORD2
-setAccelCovariance	KEYWORD2
-setHeadingCovariance	KEYWORD2
+setInitializationDuration	KEYWORD2
 update	KEYWORD2
 getPitch_rad	KEYWORD2
 getRoll_rad	KEYWORD2

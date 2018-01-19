@@ -1,20 +1,7 @@
 /*
 uNavAHRS.h
-
-Original Author: 
-Jung Soon Jang
-2006-08-31
-University of Minnesota 
-Aerospace Engineering and Mechanics 
-Copyright 2011 Regents of the University of Minnesota. All rights reserved.
-
-Updated to be a class, use Eigen, and compile as an Arduino library.
-Added methods to set covariance and get gyro bias. Added initialization to 
-estimated angles rather than assuming IMU is level. Added method to get
-magnetic heading rather than just psi:
 Brian R Taylor
 brian.taylor@bolderflight.com
-2017-12-14
 Bolder Flight Systems
 Copyright 2017 Bolder Flight Systems
 
@@ -43,64 +30,102 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 class uNavAHRS {
 	public:
-    void setMagSrd(uint8_t magSRD);
-    void setAccelCovariance(float cov);
-    void setHeadingCovariance(float cov);
-    void update(float p,float q,float r,float ax,float ay,float az,float hx, float hy, float hz);
-    float getPitch_rad();
+    void setInitializationDuration(uint32_t duration);
+    bool update(float gx,float gy,float gz,float ax,float ay,float az,float hx, float hy, float hz);
     float getRoll_rad();
+    float getPitch_rad();
     float getYaw_rad();
     float getHeading_rad();
+    void getQuaternion(float *qw, float *qi, float *qj, float *qk);
     float getGyroBiasX_rads();
     float getGyroBiasY_rads();
     float getGyroBiasZ_rads();
   private:
-    // err covariance of accelerometers
-    float var_a = 0.96177249f; //(0.1*g)^2
-    // err covariance of magnetometer heading
-    float var_psi = 0.014924; //(7*d2r)^2
-    // estimated attitude
-    float phi, theta, psi;
-    // acceleration due to gravity
-    const float G = 9.807f;
-    const float G2 = 2.0f*9.807f;
     // initialized
-    bool initialized = false;
-    // initial heading
-    float _psiInitial;
-    // EKF state vector
-    Eigen::Matrix<float,7,1> xs = Eigen::Matrix<float,7,1>::Zero();
+    bool _initialized = false;
     // timing
-    float tnow, tprev, dt;
-    // gyro integration
-    float pc, qc, rc;
-    // magnetometer skip factor
-    uint8_t _magSRD = 0;
-    uint8_t _magCount = 0;
-    // accelerometer skip factor
-    uint8_t _accelSRD = 1;
-    uint8_t _accelCount = 0;
-    // err, measurement, and process cov. matrices
-    Eigen::Matrix<float,7,7> aP = Eigen::Matrix<float,7,7>::Zero();
-    Eigen::Matrix<float,7,7> aQ = Eigen::Matrix<float,7,7>::Zero();
-    Eigen::Matrix<float,3,3> aR = Eigen::Matrix<float,3,3>::Zero();
-    // gain matrix
-    Eigen::Matrix<float,7,3> aK = Eigen::Matrix<float,7,3>::Zero();
+    float _tnow, _tprev, _dt;
+    // store previous sensor values to see when updated
+    float gx_, gy_, gz_;
+    float ax_, ay_, az_;
+    float hx_, hy_, hz_;
+    bool gyroUpdated_, accelUpdated_, magUpdated_;
+    /* sensor statistics */
+    // latch the starting time
+    bool _timeLatch = false;
+    uint32_t _startingTime;
+    uint32_t _duration = 120*1000*1000;
+    uint32_t _gyroCount, _accelCount, _magCount, _quatCount;
+    Eigen::Matrix<float,3,1> _gyroBias;
+    Eigen::Matrix<float,3,1> _gyroVariance;
+    Eigen::Matrix<float,3,1> _gyroDelta;
+    Eigen::Matrix<float,3,1> _gyroDelta2;
+    Eigen::Matrix<float,3,1> _gyroM2;
+    Eigen::Matrix<float,3,1> _accelMean;
+    Eigen::Matrix<float,3,1> _accelVariance;
+    Eigen::Matrix<float,3,1> _accelDelta;
+    Eigen::Matrix<float,3,1> _accelDelta2;
+    Eigen::Matrix<float,3,1> _accelM2;
+    Eigen::Matrix<float,3,1> _magMean;
+    Eigen::Matrix<float,3,1> _magVariance; 
+    Eigen::Matrix<float,3,1> _magDelta;
+    Eigen::Matrix<float,3,1> _magDelta2;
+    Eigen::Matrix<float,3,1> _magM2;
+    Eigen::Matrix<float,4,1> _quatMean;
+    Eigen::Matrix<float,4,1> _quatVariance; 
+    Eigen::Matrix<float,4,1> _quatDelta;
+    Eigen::Matrix<float,4,1> _quatDelta2;
+    Eigen::Matrix<float,4,1> _quatM2;
+    /* starting orientation */
+    Eigen::Matrix<float,3,1> _initialEuler;
+    /* temporary values */
+    Eigen::Matrix<float,3,1> _accel;
+    Eigen::Matrix<float,3,1> _mag;
+    Eigen::Matrix<float,3,1> _Euler;
+    Eigen::Matrix<float,4,1> _Quat;
+    float theta, phi;
+    /* kalman filter time update */
+    // state matrix
+    Eigen::Matrix<float,7,1> x_;
     // state transition matrix
-    Eigen::Matrix<float,7,7> Fsys = Eigen::Matrix<float,7,7>::Zero();
-    // measurement update
-    Eigen::Matrix<float,3,1> h_ahrs = Eigen::Matrix<float,3,1>::Zero();
-    // Jacobian matrix
-    Eigen::Matrix<float,3,7> Hj = Eigen::Matrix<float,3,7>::Zero();
-    // heading matrices
-    Eigen::Matrix<float,1,7> Hpsi = Eigen::Matrix<float,1,7>::Zero();
-    Eigen::Matrix<float,7,1> Kpsi = Eigen::Matrix<float,7,1>::Zero();
-    // magnetic heading corrected for roll and pitch angle
-    float Bxc, Byc;
-    // bound yaw angle between -180 and 180
-    float wraparound(float dta);
-    // bound heading angle between 0 and 360
-    float constrainAngle(float dta);
+    Eigen::Matrix<float,7,7> F_;
+    // state covariance matrix
+    Eigen::Matrix<float,7,7> P_;
+    // gyro covariance matrix
+    Eigen::Matrix<float,3,3> Q_;
+    // process noise matrix
+    Eigen::Matrix<float,7,3> L_;
+    /* kalman filter accel and mag measurement update */
+    // measurement jacobian
+    Eigen::Matrix<float,4,7> H_;
+    // measurement covariance matrix
+    Eigen::Matrix<float,6,6> R_;
+    // measurement output matrix
+    Eigen::Matrix<float,4,6> M_;
+    // kalman gain
+    Eigen::Matrix<float,7,4> K_;
+    // estimated output
+    Eigen::Matrix<float,4,1> h_;
+    // measured output
+    Eigen::Matrix<float,4,1> y_;
+    /* kalman filter accel only measurement update */
+    // measurement jacobian
+    Eigen::Matrix<float,3,7> Ha_;
+    // measurement covariance matrix
+    Eigen::Matrix<float,3,3> Ra_;
+    // measurement output matrix
+    Eigen::Matrix<float,3,3> Ma_;
+    // kalman gain
+    Eigen::Matrix<float,7,3> Ka_;
+    // estimated output
+    Eigen::Matrix<float,3,1> ha_;
+    // measured output
+    Eigen::Matrix<float,3,1> ya_;
+    // functions to transform attitude
+    Eigen::Matrix<float,4,1> Eul2Quat(Eigen::Matrix<float,3,1> eul);
+    Eigen::Matrix<float,3,1> Quat2Eul(Eigen::Matrix<float,4,1> q);
+    float constrainAngle180(float dta);
+    float constrainAngle360(float dta);
 };
 
 #endif
